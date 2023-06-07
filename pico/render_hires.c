@@ -6,7 +6,9 @@
 #include <pico/stdlib.h>
 
 static void render_hires_line(uint line);
+#ifdef APPLE_MODEL_IIE
 static void render_dhires_line(uint line);
+#endif
 
 static inline uint hires_line_to_mem_offset(uint line) {
   return ((line & 0x07) << 10) | ((line & 0x38) << 4) | (((line & 0xc0) >> 6) * 40);
@@ -23,16 +25,22 @@ void __time_critical_func(render_hires)() {
   vga_submit_scanline(skip_sl);
 
   for (uint line = 0; line < 192; line++) {
+    #ifdef APPLE_MODEL_IIE
     if (soft_dhires) {
       render_dhires_line(line);
-    } else {
-      gpio_put(PICO_DEFAULT_LED_PIN, 1);      
+    } else {         
       render_hires_line(line);
     }
+    #else
+    render_hires_line(line);
+    #endif
   }
 }
 
-void __time_critical_func(render_mixed_hires)() {
+void __time_critical_func(render_mixed_hires)() {  
+  if(soft_dhires) {
+    gpio_put(PICO_DEFAULT_LED_PIN, 1);
+  }
   vga_prepare_frame();
   // Skip 48 lines to center vertically
   struct vga_scanline* skip_sl = vga_prepare_scanline();
@@ -43,19 +51,27 @@ void __time_critical_func(render_mixed_hires)() {
   vga_submit_scanline(skip_sl);
 
   for (uint line = 0; line < 160; line++) {
+    #ifdef APPLE_MODEL_IIE
     if (soft_dhires) {
       render_dhires_line(line);
     } else {      
       render_hires_line(line);
     }
+    #else
+      render_hires_line(line);
+    #endif    
   }
 
   for (uint line = 20; line < 24; line++) {
+    #ifdef APPLE_MODEL_IIE
     if (soft_80col || soft_dhires) {
       render_text80_line(line);
     } else {
       render_text_line(line);
     }
+    #else
+    render_text_line(line);
+    #endif
   }
 }
 
@@ -124,7 +140,7 @@ static void __time_critical_func(render_hires_line)(uint line) {
   sl->repeat_count = 1;
   vga_submit_scanline(sl);
 }
-
+#ifdef APPLE_MODEL_IIE
 static void __time_critical_func(render_dhires_line)(uint line) {
   uint sl_pos = 0;
   uint i, j;
@@ -302,3 +318,4 @@ static void __time_critical_func(render_dhires_line)(uint line) {
   sl->repeat_count = 1;
   vga_submit_scanline(sl);
 }
+#endif

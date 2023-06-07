@@ -75,7 +75,9 @@ extern volatile uint32_t soft_monochrom;
 extern volatile uint32_t soft_video7;
 
 extern uint8_t character_rom[256 * 8];
+#ifdef APPLE_MODEL_IIE
 extern uint8_t altcharacter_rom[256 * 8];
+#endif
 
 extern uint8_t main_memory[64 * 1024];
 extern uint8_t private_memory[64 * 1024];

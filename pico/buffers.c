@@ -15,7 +15,9 @@ volatile uint32_t soft_video7;
 
 // The currently programmed character generator ROM for text mode
 uint8_t character_rom[256 * 8];
+#ifdef APPLE_MODEL_IIE
 uint8_t altcharacter_rom[256 * 8];
+#endif
 
 uint8_t main_memory[64*1024];
 uint8_t private_memory[64*1024];

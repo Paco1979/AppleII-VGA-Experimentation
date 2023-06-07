@@ -211,13 +211,13 @@ static void __time_critical_func(shadow_memory)(uint address, uint32_t value) {
     if (address == 0xc07f && ACCESS_WRITE) {
       soft_ioudis = ((uint32_t)SOFTSW_IOUDIS_OFF);
     }
-
+#ifdef APPLE_MODEL_IIE
     if (address == 0xc05e) {
       soft_an3 = ((uint32_t)SOFTSW_AN3_OFF);
       soft_dhires = ((uint32_t)SOFTSW_DHIRES_ON);
       return;
     }
-
+    
     if (address == 0xc05f) {
       if (soft_dhires) {
         //! This is the VIDEO7 Magic (Not documented by apple but by a patent US4631692 )
@@ -234,13 +234,13 @@ static void __time_critical_func(shadow_memory)(uint address, uint32_t value) {
           soft_video7 = soft_video7 | ((!soft_80col) << 1);
           //! reset state
           bit0_set = 0;
-        }
-        return;
+        }               
       }
       soft_an3 = ((uint32_t)SOFTSW_AN3_ON);
       soft_dhires = ((uint32_t)SOFTSW_DHIRES_OFF);
+      return;
     }
-
+#endif
     if (address == 0xC021 && ACCESS_WRITE) {
       if (value & 0x80) {
         soft_monochrom = SOFTSW_MONO_EN;

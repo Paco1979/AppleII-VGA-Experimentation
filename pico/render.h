@@ -26,7 +26,7 @@ static uint16_t lores_palette[16] = {
     _RGB333(0x44, 0xff, 0x99), // aqua
     _RGB333(0xff, 0xff, 0xff), // white
 };
-
+#ifdef APPLE_MODEL_IIE
 static uint16_t dhgr_palette[16] = {
     _RGB333(0x00, 0x00, 0x00),  // black - 0
     _RGB333(0x00, 0x00, 0x99),  // d.blue
@@ -45,6 +45,7 @@ static uint16_t dhgr_palette[16] = {
     _RGB333(0xff, 0xff, 0x00),  // yellow
     _RGB333(0xff, 0xff, 0xff),  // white 
 };
+#endif
 #undef _RGB333
 
 extern void render_init();
@@ -53,8 +54,9 @@ extern void render_loop();
 extern void update_text_flasher();
 extern void render_text();
 extern void render_text_line(unsigned int line);
+#ifdef APPLE_MODEL_IIE
 extern void render_text80_line(unsigned int line);
-
+#endif
 extern void render_lores();
 extern void render_mixed_lores();
 
