@@ -16,6 +16,7 @@
 #define THEN_EXTEND_7   (4 << 9)
 
 
+
 struct vga_scanline {
     // number of 32-bit words in the data array
     uint_fast16_t length;
@@ -26,7 +27,7 @@ struct vga_scanline {
     volatile uint_fast8_t _flags;
 
     uint32_t _sync;
-    uint32_t data[(VGA_WIDTH/2)+1];
+    uint32_t data[(VGA_WIDTH/2)+8];
 };
 
 
