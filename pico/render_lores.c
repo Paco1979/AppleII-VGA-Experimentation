@@ -29,74 +29,58 @@ uint16_t lores_dot_pattern[16] = {
     0x1DDD,
     0x3FFF,
 };
-void __time_critical_func(render_lores)()
-{
+
+void __time_critical_func(render_lores)() {
   vga_prepare_frame();
 
   // Skip 48 lines to center vertically
   struct vga_scanline* skip_sl = vga_prepare_scanline();
-  for (int i = 0; i < 48; i++)
-  {
+  for (int i = 0; i < 48; i++) {
     skip_sl->data[i] = (uint32_t)THEN_WAIT_HSYNC << 16;
   }
   skip_sl->length = 48;
   vga_submit_scanline(skip_sl);
 
-  for (uint line = 0; line < 24; line++)
-  {
-    if (soft_dhires)
-    {
+  for (uint line = 0; line < 24; line++) {
+    if (soft_dhires) {
       drender_lores_line(line);
-    }
-    else
-    {
+    } else {
       render_lores_line(line);
     }
   }
 }
 
-void __time_critical_func(render_mixed_lores)()
-{
+void __time_critical_func(render_mixed_lores)() {
   vga_prepare_frame();
 
   // Skip 48 lines to center vertically
   struct vga_scanline* skip_sl = vga_prepare_scanline();
-  for (int i = 0; i < 48; i++)
-  {
+  for (int i = 0; i < 48; i++) {
     skip_sl->data[i] = (uint32_t)THEN_WAIT_HSYNC << 16;
   }
   skip_sl->length = 48;
   vga_submit_scanline(skip_sl);
 
-  for (uint line = 0; line < 20; line++)
-  {
-    if (soft_dhires)
-    {
+  for (uint line = 0; line < 20; line++) {
+    if (soft_dhires) {
       drender_lores_line(line);
-    }
-    else
-    {
+    } else {
       render_lores_line(line);
     }
   }
-  if (soft_80col || soft_dhires)
-  {
-    for (uint line = 20; line < 24; line++)
-    {
+
+  if (soft_80col || soft_dhires) {
+    for (uint line = 20; line < 24; line++) {
       render_text80_line(line);
     }
-  }
-  else
-  {
-    for (uint line = 20; line < 24; line++)
-    {
+  } else {
+    for (uint line = 20; line < 24; line++) {
       render_text_line(line);
     }
   }
 }
 
-static void __time_critical_func(render_lores_line)(uint line)
-{
+static void __time_critical_func(render_lores_line)(uint line) {
   // Construct two scanlines for the two different colored cells at the same time
   struct vga_scanline* sl1 = vga_prepare_scanline();
   struct vga_scanline* sl2 = vga_prepare_scanline();
@@ -117,17 +101,15 @@ static void __time_critical_func(render_lores_line)(uint line)
   sl1->data[sl_pos] = (0 | THEN_EXTEND_3) | ((0 | THEN_EXTEND_3) << 16);  // 8 pixels per word
   sl2->data[sl_pos] = (0 | THEN_EXTEND_3) | ((0 | THEN_EXTEND_3) << 16);  // 8 pixels per word
   sl_pos++;
-  if (soft_monochrom)
-  {
-    for (i = 0; i < 40; i += 2)
-    {
+
+  if (soft_monochrom) {
+    for (i = 0; i < 40; i += 2) {
       color1 = lores_dot_pattern[line_buf[i] & 0xf] << 14;
       color2 = lores_dot_pattern[(line_buf[i] >> 4) & 0xf] << 14;
       color1 |= lores_dot_pattern[line_buf[i + 1] & 0xf];
       color2 |= lores_dot_pattern[(line_buf[i + 1] >> 4) & 0xf];
 
-      for (j = 0; j < 14; j++)
-      {
+      for (j = 0; j < 14; j++) {
         uint32_t pixeldata;
 
         pixeldata = (color1 & 0x8000000) ? (lores_palette[15]) : (lores_palette[0]);
@@ -143,11 +125,8 @@ static void __time_critical_func(render_lores_line)(uint line)
         sl_pos++;
       }
     }
-  }
-  else
-  {
-    for (int i = 0; i < 40; i++)
-    {
+  } else {
+    for (int i = 0; i < 40; i++) {
       uint32_t color1 = lores_palette[line_buf[i] & 0xf];
       uint32_t color2 = lores_palette[(line_buf[i] >> 4) & 0xf];
 
@@ -175,8 +154,7 @@ static void __time_critical_func(render_lores_line)(uint line)
   vga_submit_scanline(sl2);
 }
 
-static void __time_critical_func(drender_lores_line)(uint line)
-{
+static void __time_critical_func(drender_lores_line)(uint line) {
   // Construct two scanlines for the two different colored cells at the same time
   struct vga_scanline* sl1 = vga_prepare_scanline();
   struct vga_scanline* sl2 = vga_prepare_scanline();
@@ -207,10 +185,8 @@ static void __time_critical_func(drender_lores_line)(uint line)
   color1 = 0;
   color2 = 0;
 
-  while (i < 40)
-  {
-    while ((dotc <= 14) && (i < 40))
-    {
+  while (i < 40) {
+    while ((dotc <= 14) && (i < 40)) {
       color1 |= dgr_dot_pattern[((i & 1) << 4) | (line_bufb[i] & 0xf)] << dotc;
       color2 |= dgr_dot_pattern[((i & 1) << 4) | ((line_bufb[i] >> 4) & 0xf)] << dotc;
       dotc += 7;
@@ -221,8 +197,7 @@ static void __time_critical_func(drender_lores_line)(uint line)
     }
 
     // Consume pixels
-    while ((dotc >= 8) || ((dotc > 0) && (i == 40)))
-    {
+    while ((dotc >= 8) || ((dotc > 0) && (i == 40))) {
       color1 &= 0xfffffffe;
       color1 |= (color1 >> 4) & 1;
       pixeldata = dhgr_palette[color1 & 0xf];
