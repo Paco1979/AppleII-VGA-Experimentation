@@ -86,6 +86,7 @@ static void abus_main_setup(PIO pio, uint sm) {
 void abus_init() {
   //! Init states
   soft_switches = SOFTSW_TEXT_MODE;
+  soft_ramwrt = 0;
   soft_80col = 0;
   soft_80store = 0;
   soft_video7 = VIDEO7_MODE3;
@@ -114,6 +115,7 @@ static void __time_critical_func(shadow_memory)(uint address, uint32_t value) {
   } else if ((address == 0xFFFD) && (ACCESS_READ) && (reset_phase_1_happening)) {
     //! Reset Clear all buffers    
     soft_switches = SOFTSW_TEXT_MODE;
+    soft_ramwrt = 0;
     soft_80col = 0;
     soft_80store = 0;
     soft_video7 = VIDEO7_MODE3;
@@ -162,20 +164,44 @@ static void __time_critical_func(shadow_memory)(uint address, uint32_t value) {
   if (address < 0xc080) {
     //! Soft switches
     // Shadow the soft-switches by observing all read & write bus cycles
-    if (address == 0xc003) {
-      soft_ramrd = ((uint32_t)SOFTSW_READ_AUX);
+    if (address == 0xC000 && ACCESS_WRITE) {
+      soft_80store = ((uint32_t)SOFTSW_80STORE_OFF);
+    }
+
+    if (address == 0xc001 && ACCESS_WRITE) {
+      soft_80store = ((uint32_t)SOFTSW_80STORE_ON);
     }
 
     if (address == 0xc002 && ACCESS_WRITE) {
       soft_ramrd = ((uint32_t)SOFTSW_READ_MAIN);
     }
 
-    if (address == 0xc005 && ACCESS_WRITE) {
-      soft_ramwrt = ((uint32_t)SOFTSW_WRITE_AUX);
+    if (address == 0xc003 && ACCESS_WRITE) {
+      soft_ramrd = ((uint32_t)SOFTSW_READ_AUX);
     }
 
     if (address == 0xc004 && ACCESS_WRITE) {
       soft_ramwrt = ((uint32_t)SOFTSW_WRITE_MAIN);
+    }
+
+    if (address == 0xc005 && ACCESS_WRITE) {
+      soft_ramwrt = ((uint32_t)SOFTSW_WRITE_AUX);
+    }
+
+    if (address == 0xc00c && ACCESS_WRITE) {
+      soft_80col = ((uint32_t)SOFTSW_80COL_OFF);
+    }
+    
+    if (address == 0xc00e && ACCESS_WRITE) {
+      soft_switches_alt = ((uint32_t)SOFTSW_ALTCHAR_OFF);
+    }
+
+    if (address == 0xc00f && ACCESS_WRITE) {
+      soft_switches_alt = ((uint32_t)SOFTSW_ALTCHAR_ON);
+    }
+
+    if (address == 0xc00d && ACCESS_WRITE) {
+      soft_80col = ((uint32_t)SOFTSW_80COL_ON);
     }
 
     if (address == 0xc07e && ACCESS_WRITE) {
@@ -186,25 +212,10 @@ static void __time_critical_func(shadow_memory)(uint address, uint32_t value) {
       soft_ioudis = ((uint32_t)SOFTSW_IOUDIS_OFF);
     }
 
-    if (address == 0xc00c && ACCESS_WRITE) {
-      soft_80col = ((uint32_t)SOFTSW_80COL_OFF);
-    }
-    
-    if (address == 0xc00d && ACCESS_WRITE) {
-      soft_80col = ((uint32_t)SOFTSW_80COL_ON);
-    }
-
-    if (address == 0xC000 && ACCESS_WRITE) {
-      soft_80store = ((uint32_t)SOFTSW_80STORE_OFF);
-    }
-
-    if (address == 0xc001 && ACCESS_WRITE) {
-      soft_80store = ((uint32_t)SOFTSW_80STORE_ON);
-    }
-
     if (address == 0xc05e) {
       soft_an3 = ((uint32_t)SOFTSW_AN3_OFF);
       soft_dhires = ((uint32_t)SOFTSW_DHIRES_ON);
+      return;
     }
 
     if (address == 0xc05f) {
@@ -224,6 +235,7 @@ static void __time_critical_func(shadow_memory)(uint address, uint32_t value) {
           //! reset state
           bit0_set = 0;
         }
+        return;
       }
       soft_an3 = ((uint32_t)SOFTSW_AN3_ON);
       soft_dhires = ((uint32_t)SOFTSW_DHIRES_OFF);
@@ -272,19 +284,8 @@ static void __time_critical_func(shadow_memory)(uint address, uint32_t value) {
           break;
         }
       }
-    } else if (((address & 0xfffe) == 0xc00e) && ACCESS_WRITE) {
-      //! ALTCHAR Softswitch access
-      switch (address & 1) {
-        case 0: {
-          soft_switches_alt = ((uint32_t)SOFTSW_ALTCHAR_OFF);
-          break;
-        }
-        case 1: {
-          soft_switches_alt = ((uint32_t)SOFTSW_ALTCHAR_ON);
-          break;
-        }
-      }      
-    }    
+    } 
+    return;
   }
 }
 
