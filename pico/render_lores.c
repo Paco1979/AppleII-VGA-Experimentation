@@ -4,12 +4,14 @@
 #include "vga.h"
 
 static void render_lores_line(uint line);
+#ifdef APPLE_MODEL_IIE
 static void drender_lores_line(uint line);
-
 uint8_t dgr_dot_pattern[32] = {
     0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x08, 0x19, 0x2A, 0x3B, 0x4C, 0x5D, 0x6E, 0x7F,
     0x00, 0x44, 0x08, 0x4C, 0x11, 0x55, 0x19, 0x5D, 0x22, 0x66, 0x2A, 0x6E, 0x33, 0x77, 0x3B, 0x7F,
 };
+#endif
+
 
 uint16_t lores_dot_pattern[16] = {
     0x0000,
@@ -42,17 +44,20 @@ void __time_critical_func(render_lores)() {
   vga_submit_scanline(skip_sl);
 
   for (uint line = 0; line < 24; line++) {
+    #ifdef APPLE_MODEL_IIE
     if (soft_dhires) {
       drender_lores_line(line);
     } else {
       render_lores_line(line);
     }
+    #else
+    render_lores_line(line);
+    #endif
   }
 }
 
 void __time_critical_func(render_mixed_lores)() {
-  vga_prepare_frame();
-
+  vga_prepare_frame();  
   // Skip 48 lines to center vertically
   struct vga_scanline* skip_sl = vga_prepare_scanline();
   for (int i = 0; i < 48; i++) {
@@ -62,14 +67,18 @@ void __time_critical_func(render_mixed_lores)() {
   vga_submit_scanline(skip_sl);
 
   for (uint line = 0; line < 20; line++) {
+    #ifdef APPLE_MODEL_IIE
     if (soft_dhires) {
       drender_lores_line(line);
     } else {
       render_lores_line(line);
     }
+    #else
+    render_lores_line(line);
+    #endif
   }
-
-  if (soft_80col || soft_dhires) {
+  #ifdef APPLE_MODEL_IIE
+  if (soft_80col || soft_dhires) {    
     for (uint line = 20; line < 24; line++) {
       render_text80_line(line);
     }
@@ -78,6 +87,11 @@ void __time_critical_func(render_mixed_lores)() {
       render_text_line(line);
     }
   }
+  #else
+    for (uint line = 20; line < 24; line++) {
+      render_text_line(line);
+    }  
+  #endif
 }
 
 static void __time_critical_func(render_lores_line)(uint line) {
@@ -153,7 +167,7 @@ static void __time_critical_func(render_lores_line)(uint line) {
   sl2->repeat_count = 7;
   vga_submit_scanline(sl2);
 }
-
+#ifdef APPLE_MODEL_IIE
 static void __time_critical_func(drender_lores_line)(uint line) {
   // Construct two scanlines for the two different colored cells at the same time
   struct vga_scanline* sl1 = vga_prepare_scanline();
@@ -254,3 +268,4 @@ static void __time_critical_func(drender_lores_line)(uint line) {
   sl2->repeat_count = 7;
   vga_submit_scanline(sl2);
 }
+#endif
