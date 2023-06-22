@@ -24,6 +24,8 @@ static inline uint_fast8_t __time_critical_func(char_text_bits)(uint_fast8_t ch,
   } else {
     bits = character_rom[((uint_fast16_t)ch << 3) | glyph_line];
   }
+  #else
+  bits = character_rom[((uint_fast16_t)ch << 3) | glyph_line];
   #endif
   /*
       Character stored in ram like this
