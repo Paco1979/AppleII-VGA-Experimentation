@@ -26,3 +26,8 @@ appleModel:
       long: Support Apple IIe video features
       settings:
         APPLE_MODEL: IIE
+    mpfii:
+      short: MPFII
+      long: Support MPFII computer
+      settings:
+        APPLE_MODEL: MPFII

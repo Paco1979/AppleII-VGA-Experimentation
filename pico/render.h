@@ -8,6 +8,29 @@
 #define _RGB333(r, g, b) \
     ((((((uint16_t)(r)*256 / 36) + 128) / 256) << 6) | (((((uint16_t)(g)*256 / 36) + 128) / 256) << 3) | \
         ((((uint16_t)(b)*256 / 36) + 128) / 256))
+
+
+#ifdef APPLE_MODEL_MPFII
+static uint16_t lores_palette[16] = {
+    _RGB333(0x00, 0x00, 0x00),  // black
+    _RGB333(0x00, 0x77, 0x22),  // d.green
+    _RGB333(0xdd, 0x22, 0xdd),  // h.violet
+    _RGB333(0xff, 0xff, 0xff),  // white
+    _RGB333(0x00, 0x77, 0x22),  // d.green
+    _RGB333(0xff, 0x66, 0x00),  // h.orange
+    _RGB333(0x22, 0x22, 0xff),  // h.blue
+    _RGB333(0xff, 0xff, 0xff),  // white
+    _RGB333(0xdd, 0x22, 0xdd),  // h.violet
+    _RGB333(0x00, 0x77, 0x22),  // d.green
+    _RGB333(0xdd, 0x22, 0xdd),  // h.violet
+    _RGB333(0xff, 0xff, 0xff),  // white
+    _RGB333(0xff, 0xff, 0xff),  // white
+    _RGB333(0xff, 0x66, 0x00),  // h.orange
+    _RGB333(0x00, 0x00, 0x99),  // d.blue
+    _RGB333(0xff, 0xff, 0xff),  // white
+};
+#endif
+#if defined(APPLE_MODEL_IIPLUS) || defined(APPLE_MODEL_IIE)
 static uint16_t lores_palette[16] = {
     _RGB333(0x00, 0x00, 0x00),  // black
     _RGB333(0xdd, 0x00, 0x33),  // magenta (deep red)
@@ -26,6 +49,7 @@ static uint16_t lores_palette[16] = {
     _RGB333(0x44, 0xff, 0x99),  // aqua
     _RGB333(0xff, 0xff, 0xff),  // white
 };
+#endif
 #ifdef APPLE_MODEL_IIE
 static uint16_t dhgr_palette[16] = {
     _RGB333(0x00, 0x00, 0x00),  // black - 0
